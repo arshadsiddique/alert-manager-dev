@@ -1,0 +1,49 @@
+variables:
+  APP_NAME: alert-manager
+  DOCKER_REGISTRY: 281139278838.dkr.ecr.eu-west-1.amazonaws.com
+  DOCKER_CONTAINER_IMAGE: ${DOCKER_REGISTRY}/observability/${APP_NAME}
+
+default:
+  tags:
+    - devtools
+
+stages:
+  - build
+
+docker_build_backend:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+  before_script:
+    - mkdir -p /kaniko/.docker
+    - echo '{"credsStore":"ecr-login"}' > /kaniko/.docker/config.json
+  script:
+    - |
+      DATE_TAG=$(date +%Y%m%d-%H%M)
+      /kaniko/executor \
+        --context "${CI_PROJECT_DIR}/backend" \
+        --dockerfile "${CI_PROJECT_DIR}/backend/Dockerfile" \
+        --destination "${DOCKER_CONTAINER_IMAGE}:backend-${DATE_TAG}" \
+        --destination "${DOCKER_CONTAINER_IMAGE}:backend-latest" \
+        --cache=false
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+
+docker_build_frontend:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+  before_script:
+    - mkdir -p /kaniko/.docker
+    - echo '{"credsStore":"ecr-login"}' > /kaniko/.docker/config.json
+  script:
+    - |
+      DATE_TAG=$(date +%Y%m%d-%H%M)
+      /kaniko/executor \
+        --context "${CI_PROJECT_DIR}/frontend" \
+        --dockerfile "${CI_PROJECT_DIR}/frontend/Dockerfile" \
+        --destination "${DOCKER_CONTAINER_IMAGE}:frontend-${DATE_TAG}" \
+        --destination "${DOCKER_CONTAINER_IMAGE}:frontend-latest" \
+        --cache=false
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'

@@ -1,0 +1,129 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: jsm-alert-postgres
+    environment:
+      POSTGRES_DB: alertdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - alert-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d alertdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jsm-alert-backend
+    environment:
+      # Database
+      DATABASE_URL: postgresql://user:password@postgres:5432/alertdb
+      
+      # Grafana Configuration
+      GRAFANA_API_URL: ${GRAFANA_API_URL}
+      GRAFANA_API_KEY: ${GRAFANA_API_KEY}
+      
+      # JSM Configuration
+      JIRA_URL: ${JIRA_URL}
+      JIRA_USER_EMAIL: ${JIRA_USER_EMAIL}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN}
+      JSM_CLOUD_ID: ${JSM_CLOUD_ID:-}
+      
+      # JSM Features
+      USE_JSM_MODE: ${USE_JSM_MODE:-true}
+      ENABLE_AUTO_CLOSE: ${ENABLE_AUTO_CLOSE:-true}
+      ENABLE_MATCH_LOGGING: ${ENABLE_MATCH_LOGGING:-false}
+      
+      # Alert Matching Configuration
+      ALERT_MATCH_TIME_WINDOW_MINUTES: ${ALERT_MATCH_TIME_WINDOW_MINUTES:-15}
+      ALERT_MATCH_CONFIDENCE_THRESHOLD: ${ALERT_MATCH_CONFIDENCE_THRESHOLD:-70.0}
+      ALERT_MATCH_HIGH_CONFIDENCE_THRESHOLD: ${ALERT_MATCH_HIGH_CONFIDENCE_THRESHOLD:-85.0}
+      ENABLE_FUZZY_MATCHING: ${ENABLE_FUZZY_MATCHING:-true}
+      ENABLE_CONTENT_SIMILARITY: ${ENABLE_CONTENT_SIMILARITY:-true}
+      LOG_MATCHING_DETAILS: ${LOG_MATCHING_DETAILS:-true}
+      
+      # Sync Configuration  
+      GRAFANA_SYNC_INTERVAL_SECONDS: ${GRAFANA_SYNC_INTERVAL_SECONDS:-300}
+      JSM_SYNC_INTERVAL_SECONDS: ${JSM_SYNC_INTERVAL_SECONDS:-300}
+      
+      # Alert Filtering
+      FILTER_NON_PROD_ALERTS: ${FILTER_NON_PROD_ALERTS:-true}
+      EXCLUDED_CLUSTERS: ${EXCLUDED_CLUSTERS:-["stage", "dev", "test"]}
+      EXCLUDED_ENVIRONMENTS: ${EXCLUDED_ENVIRONMENTS:-["devo-stage-eu"]}
+      
+      # App Configuration
+      DEBUG: ${DEBUG:-false}
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here}
+      
+      # Legacy Jira Settings (for backwards compatibility)
+      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-OP}
+      JIRA_INCIDENT_ISSUE_TYPE: ${JIRA_INCIDENT_ISSUE_TYPE:-Incident}
+      JIRA_ACKNOWLEDGE_TRANSITION_NAME: ${JIRA_ACKNOWLEDGE_TRANSITION_NAME:-To Do}
+      JIRA_RESOLVE_TRANSITION_NAME: ${JIRA_RESOLVE_TRANSITION_NAME:-Completed}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - alert-network
+    volumes:
+      - ./backend:/app
+      - backend_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: jsm-alert-frontend
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      # Define the API URLs for each environment. Ensure they use https:// for deployed envs.
+      REACT_APP_DEV_API_URL: ${REACT_APP_DEV_API_URL:-http://localhost:8000}
+      REACT_APP_STAGING_API_URL: ${REACT_APP_STAGING_API_URL}
+      REACT_APP_PROD_API_URL: ${REACT_APP_PROD_API_URL}
+      REACT_APP_JIRA_URL: ${REACT_APP_JIRA_URL}
+      REACT_APP_JSM_MODE: ${REACT_APP_JSM_MODE:-true}
+      REACT_APP_VERSION: "1.0.0"
+      REACT_APP_BUILD_DATE: ${BUILD_DATE:-}
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - alert-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_logs:
+    driver: local
+
+networks:
+  alert-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

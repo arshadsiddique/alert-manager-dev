@@ -1,0 +1,96 @@
+.App {
+  text-align: center;
+}
+
+.ant-layout-sider-logo {
+  height: 64px; /* Increased height for logo container */
+  background: rgba(255, 255, 255, 0.3);
+  margin: 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.devo-logo {
+  max-height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #f5f5f5 !important;
+}
+
+.severity-tag {
+  font-weight: bold;
+}
+
+.status-tag {
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.alert-summary {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jira-link {
+  color: #1890ff;
+  text-decoration: none;
+}
+
+.jira-link:hover {
+  text-decoration: underline;
+}
+
+.alert-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.alert-stats {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .ant-table {
+    font-size: 12px;
+  }
+  
+  .ant-table-thead > tr > th {
+    padding: 8px 4px;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+  }
+  
+  .alert-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .alert-actions {
+    justify-content: center;
+  }
+  
+  .alert-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}

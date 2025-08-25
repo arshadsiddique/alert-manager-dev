@@ -1,0 +1,15 @@
+[
+  {
+    "labels": {
+      "alertname": "pod-not-healthy-prometheus-metrics-platform-k8s",
+      "severity": "critical",
+      "cluster": "prod-east",
+      "instance": "prometheus-server-pod"
+    },
+    "annotations": {
+      "summary": "Pod is not healthy in prometheus metrics platform",
+      "description": "Pod spark-worker-5774b86b6d-cfxwl is in Failed state"
+    },
+    "startsAt": "2025-06-26T10:00:00Z"
+  }
+]

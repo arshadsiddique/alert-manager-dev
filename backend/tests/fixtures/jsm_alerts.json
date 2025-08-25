@@ -1,0 +1,16 @@
+[
+  {
+    "data": {
+      "id": "test-alert-id",
+      "message": "[Grafana]: Pod not healthy alert",
+      "tags": [
+        "alertname:pod-not-healthy-prometheus-metrics-platform-k8s",
+        "severity:critical",
+        "cluster:prod-east"
+      ],
+      "priority": "P1",
+      "createdAt": "2025-06-26T10:02:00Z",
+      "status": "open"
+    }
+  }
+]
