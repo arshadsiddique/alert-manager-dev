@@ -3,7 +3,7 @@ from typing import Optional
 
 class Settings(BaseSettings):
 
-    # --- Prometheus Alertmanager Configuration (NEW) ---
+    # --- Prometheus Alertmanager Configuration ---
     ENABLE_PROMETHEUS_SYNC: bool = True
     PROMETHEUS_API_URLS: str = "http://monitoring-awseu.devo.internal:9090,http://monitoring-awsus.devo.internal:9090"
     
