@@ -30,6 +30,7 @@ class AlertResponse(AlertBase):
     generator_url: Optional[str]
     grafana_status: str
     source: str
+    source_instance: Optional[str] = None
     
     # Legacy fields
     jira_status: str

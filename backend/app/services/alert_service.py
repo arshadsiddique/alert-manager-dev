@@ -354,12 +354,17 @@ class AlertService:
                     
         except Exception as e:
             logger.error(f"❌ Error updating orphaned JSM alerts: {e}")
-    
+    """
     def get_alerts(self, db: Session, skip: int = 0, limit: int = 5000) -> List[Alert]:
-        """Get paginated alerts from database, showing only matched alerts by default."""
         query = db.query(Alert).filter(Alert.jsm_alert_id.isnot(None))
         return query.order_by(Alert.created_at.desc()).offset(skip).limit(limit).all()
+    """
     
+    def get_alerts(self, db: Session, skip: int = 0, limit: int = 5000) -> List[Alert]:
+        """Get paginated alerts from the database."""
+        query = db.query(Alert)
+        return query.order_by(Alert.created_at.desc()).offset(skip).limit(limit).all()
+
     def get_alert(self, db: Session, alert_id: int) -> Optional[Alert]:
         """Get single alert by ID"""
         return db.query(Alert).filter(Alert.id == alert_id).first()

@@ -34,6 +34,8 @@ def upgrade() -> None:
         sa.Column('grafana_status', sa.String(), nullable=True, server_default='active'),
         sa.Column('labels', sa.JSON(), nullable=True),
         sa.Column('annotations', sa.JSON(), nullable=True),
+        sa.Column('source', sa.String(), server_default='grafana', nullable=False),
+        sa.Column('source_instance', sa.String(), nullable=True),
 
         # Legacy Jira integration
         sa.Column('jira_status', sa.String(), nullable=True, server_default='open'),

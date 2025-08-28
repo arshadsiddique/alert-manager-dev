@@ -12,11 +12,17 @@ from ...schemas.alert import AlertResponse, AcknowledgeRequest, ResolveRequest
 router = APIRouter()
 alert_service = AlertService()
 
+"""
+@router.get("/", response_model=List[AlertResponse])
+async def get_alerts(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
+    alerts = alert_service.get_alerts(db, skip=skip, limit=limit)
+    return alerts
+"""
+
 @router.get("/", response_model=List[AlertResponse])
 async def get_alerts(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
     """
-    Get paginated list of Grafana alerts that have been successfully matched 
-    with a JSM alert.
+    Get a paginated list of all alerts from all sources.
     """
     alerts = alert_service.get_alerts(db, skip=skip, limit=limit)
     return alerts
