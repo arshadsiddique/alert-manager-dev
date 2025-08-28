@@ -5,6 +5,7 @@ from ..models.alert import Alert
 from ..schemas.alert import AlertCreate, AlertUpdate
 from .grafana_service import GrafanaService
 from .jsm_service import JSMService
+from .prometheus_service import PrometheusService
 from .matching_service import AlertMatchingService
 from ..core.config import settings
 import logging
@@ -15,6 +16,7 @@ class AlertService:
     def __init__(self):
         self.grafana_service = GrafanaService()
         self.jsm_service = JSMService()
+        self.prometheus_service = PrometheusService()
         self.matching_service = AlertMatchingService()
     
     def _sanitize_alert_data(self, alert_data: dict) -> dict:
@@ -52,30 +54,34 @@ class AlertService:
         return False
     
     async def sync_alerts(self, db: Session):
-        """Sync alerts from Grafana and JSM, then match them"""
+        """Sync alerts from all sources (Grafana, Prometheus) and JSM, then match them"""
         try:
-            logger.info("🔄 Starting alert synchronization with Grafana and JSM")
+            logger.info("🔄 Starting alert synchronization with all sources and JSM")
             
-            # Fetch alerts from both systems
+            # Fetch alerts from all source systems
             grafana_alerts = await self.grafana_service.get_active_alerts()
+            prometheus_alerts = await self.prometheus_service.get_active_alerts()
+            # Combine all source alerts into a single list
+            source_alerts = grafana_alerts + prometheus_alerts
+            # Fetch JSM alerts
             jsm_alerts = await self.jsm_service.get_jsm_alerts(limit=settings.JSM_ALERTS_LIMIT)
             
-            logger.info(f"📊 Retrieved {len(grafana_alerts)} Grafana alerts and {len(jsm_alerts)} JSM alerts")
-            
-            # Filter out non-production alerts from Grafana
-            filtered_grafana_alerts = []
-            for alert_data in grafana_alerts:
+            logger.info(f"📊 Retrieved {len(source_alerts)} source alerts ({len(grafana_alerts)} Grafana, {len(prometheus_alerts)} Prometheus) and {len(jsm_alerts)} JSM alerts")
+    
+            # Filter out non-production alerts from the combined list
+            filtered_source_alerts = []
+            for alert_data in source_alerts:
                 if not self._is_non_prod_alert(alert_data):
-                    filtered_grafana_alerts.append(alert_data)
+                    filtered_source_alerts.append(alert_data)
             
-            if len(filtered_grafana_alerts) != len(grafana_alerts):
-                logger.info(f"🔍 After filtering: {len(filtered_grafana_alerts)} production Grafana alerts (filtered out {len(grafana_alerts) - len(filtered_grafana_alerts)})")
-            
-            # Match Grafana alerts with JSM alerts using the matching service
+            if len(filtered_source_alerts) != len(source_alerts):
+                logger.info(f"🔍 After filtering: {len(filtered_source_alerts)} production source alerts (filtered out {len(source_alerts) - len(filtered_source_alerts)})")
+
+            # Match source alerts with JSM alerts using the matching service
             matched_alerts = self.matching_service.match_grafana_with_jsm(
-                filtered_grafana_alerts, jsm_alerts
+                filtered_source_alerts, jsm_alerts
             )
-            
+
             matches_found = len([m for m in matched_alerts if m['jsm_alert'] is not None])
             logger.info(f"🎯 Matched {matches_found}/{len(matched_alerts)} alert pairs")
             

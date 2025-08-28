@@ -53,7 +53,8 @@ class GrafanaService:
             'started_at': self._parse_datetime(alert.get('startsAt')),
             'generator_url': alert.get('generatorURL'),
             'labels': labels,
-            'annotations': annotations
+            'annotations': annotations,
+            'source': 'grafana'
         }
     
     def _parse_datetime(self, date_str: str) -> datetime:

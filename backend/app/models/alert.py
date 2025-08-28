@@ -20,6 +20,7 @@ class Alert(Base):
     grafana_status = Column(String, default="active", index=True)
     labels = Column(JSON)
     annotations = Column(JSON)
+    source = Column(String, default="grafana", index=True, nullable=False)
     
     # JSM Alert Integration Fields
     jsm_alert_id = Column(String, nullable=True, index=True)

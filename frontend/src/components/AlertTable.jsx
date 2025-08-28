@@ -38,10 +38,10 @@ import {
   ApiOutlined,
   EyeOutlined,
   InfoCircleOutlined,
-  ThunderboltOutlined,
   CheckCircleOutlined,
   FireOutlined,
-  WarningOutlined
+  WarningOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import moment from 'moment';
 
@@ -73,6 +73,7 @@ const AlertTable = ({ alerts, loading, onAcknowledge, onResolve, onSync, error }
     owner: '',
     acknowledgedBy: '',
     resolvedBy: '',
+    source: [],
     dateRange: null
   });
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -88,7 +89,8 @@ const AlertTable = ({ alerts, loading, onAcknowledge, onResolve, onSync, error }
       matchTypes: [...new Set(alerts.map(alert => alert.match_type).filter(Boolean))],
       owners: [...new Set(alerts.map(alert => alert.jsm_owner).filter(Boolean))],
       acknowledgedBy: [...new Set(alerts.map(alert => alert.acknowledged_by).filter(Boolean))],
-      resolvedBy: [...new Set(alerts.map(alert => alert.resolved_by).filter(Boolean))]
+      resolvedBy: [...new Set(alerts.map(alert => alert.resolved_by).filter(Boolean))],
+      sources: [...new Set(alerts.map(alert => alert.source).filter(Boolean))],
     };
   }, [alerts]);
 
@@ -128,6 +130,9 @@ const AlertTable = ({ alerts, loading, onAcknowledge, onResolve, onSync, error }
       if (filters.matchType.length > 0 && !filters.matchType.includes(alert.match_type)) {
         return false;
       }
+      if (filters.source.length > 0 && !filters.source.includes(alert.source)) {
+        return false;
+      }
 
       // Date range filter
       if (filters.dateRange && filters.dateRange.length === 2) {
@@ -158,6 +163,7 @@ const AlertTable = ({ alerts, loading, onAcknowledge, onResolve, onSync, error }
       owner: '',
       acknowledgedBy: '',
       resolvedBy: '',
+      source: [],
       dateRange: null
     });
     setSelectedRowKeys([]);
@@ -343,65 +349,6 @@ const AlertTable = ({ alerts, loading, onAcknowledge, onResolve, onSync, error }
       ),
     },
     {
-      title: 'Severity',
-      dataIndex: 'severity',
-      key: 'severity',
-      sorter: (a, b) => {
-        const severityOrder = { critical: 4, warning: 3, info: 2, unknown: 1 };
-        return (severityOrder[a.severity] || 0) - (severityOrder[b.severity] || 0);
-      },
-      render: (severity) => (
-        <Tag color={getSeverityColor(severity)}>
-          {severity?.toUpperCase() || 'UNKNOWN'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Grafana Status',
-      dataIndex: 'grafana_status',
-      key: 'grafana_status',
-      sorter: (a, b) => (a.grafana_status || '').localeCompare(b.grafana_status || ''),
-      render: (status) => (
-        <Tag color={getStatusColor(status)}>
-          {status?.toUpperCase()}
-        </Tag>
-      ),
-    },
-    {
-      title: 'JSM Status & Match',
-      key: 'jsm_info',
-      sorter: (a, b) => (a.jsm_status || 'none').localeCompare(b.jsm_status || 'none'),
-      render: (_, record) => (
-        <div>
-          <div style={{ marginBottom: '4px' }}>
-            {record.jsm_status ? (
-              <Space>
-                <Tag color={getStatusColor(record.jsm_status)}>
-                  JSM: {record.jsm_status?.toUpperCase()}
-                </Tag>
-                {record.jsm_acknowledged && (
-                  <Tag color="blue" size="small">
-                    ACK
-                  </Tag>
-                )}
-              </Space>
-            ) : (
-              <Tag color="default">No JSM Alert</Tag>
-            )}
-          </div>
-          <div>
-            <Tag 
-              color={getMatchTypeColor(record.match_type)} 
-              size="small"
-              icon={getMatchTypeIcon(record.match_type)}
-            >
-              {record.match_type || 'none'}: {record.match_confidence || 0}%
-            </Tag>
-          </div>
-        </div>
-      ),
-    },
-    {
       title: 'Owner / Acknowledged By',
       key: 'assignee_info',
       sorter: (a, b) => {
@@ -482,6 +429,22 @@ const AlertTable = ({ alerts, loading, onAcknowledge, onResolve, onSync, error }
                 </Space>
             );
         },
+    },
+    {
+      title: 'Source',
+      dataIndex: 'source',
+      key: 'source',
+      sorter: (a, b) => (a.source || '').localeCompare(b.source || ''),
+      render: (source) => {
+        const isPrometheus = source === 'prometheus';
+        const color = isPrometheus ? 'volcano' : 'blue';
+        const icon = isPrometheus ? <ThunderboltOutlined /> : null; // Replace with a Grafana icon if you have one
+        return (
+          <Tag color={color} icon={icon}>
+            {source?.toUpperCase()}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Created / Updated',
@@ -708,21 +671,19 @@ const AlertTable = ({ alerts, loading, onAcknowledge, onResolve, onSync, error }
               ))}
             </Select>
           </Col>
-          
+
           <Col xs={24} sm={12} md={8} lg={6}>
             <Select
               mode="multiple"
-              placeholder="Filter by match type"
-              value={filters.matchType}
-              onChange={(value) => updateFilter('matchType', value)}
+              placeholder="Filter by source"
+              value={filters.source}
+              onChange={(value) => updateFilter('source', value)}
               style={{ width: '100%' }}
               allowClear
             >
-              {uniqueValues.matchTypes.map(type => (
-                <Option key={type} value={type}>
-                  <Tag color={getMatchTypeColor(type)} size="small" icon={getMatchTypeIcon(type)}>
-                    {type}
-                  </Tag>
+              {uniqueValues.sources.map(source => (
+                <Option key={source} value={source}>
+                  {source.toUpperCase()}
                 </Option>
               ))}
             </Select>

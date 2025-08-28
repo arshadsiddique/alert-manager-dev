@@ -2,6 +2,11 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
+
+    # --- Prometheus Alertmanager Configuration (NEW) ---
+    ENABLE_PROMETHEUS_SYNC: bool = True
+    PROMETHEUS_API_URLS: str = "http://monitoring-awseu.devo.internal:9090,http://monitoring-awsus.devo.internal:9090"
+    
     # Database
     DATABASE_URL: str = "postgresql://user:password@localhost:5432/alertdb"
     
