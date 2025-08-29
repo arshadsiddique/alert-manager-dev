@@ -47,6 +47,7 @@ class GrafanaService:
             'alert_name': labels.get('alertname', 'Unnamed'),
             'cluster': labels.get('cluster'),
             'pod': labels.get('pod'),
+            'instance': labels.get('instance'),
             'severity': labels.get('severity'),
             'summary': annotations.get('summary'),
             'description': annotations.get('description', ''),

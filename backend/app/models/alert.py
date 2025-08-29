@@ -12,6 +12,7 @@ class Alert(Base):
     alert_name = Column(String, index=True)
     cluster = Column(String, index=True)
     pod = Column(String)
+    instance = Column(String, nullable=True, index=True)
     severity = Column(String, index=True)
     summary = Column(Text)
     description = Column(Text)

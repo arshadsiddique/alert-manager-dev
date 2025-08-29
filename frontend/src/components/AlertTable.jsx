@@ -344,6 +344,7 @@ const AlertTable = ({ alerts, loading, onAcknowledge, onResolve, onSync, error }
           <div style={{ fontSize: '12px', color: '#666' }}>
             {record.cluster && `Cluster: ${record.cluster}`}
             {record.pod && ` | Pod: ${record.pod}`}
+            {record.instance && ` | Instance: ${record.instance}`}
           </div>
         </div>
       ),
@@ -839,6 +840,7 @@ const AlertTable = ({ alerts, loading, onAcknowledge, onResolve, onSync, error }
                   <div><strong>Name:</strong> {selectedAlert.alert_name}</div>
                   <div><strong>Cluster:</strong> {selectedAlert.cluster || 'N/A'}</div>
                   <div><strong>Pod:</strong> {selectedAlert.pod || 'N/A'}</div>
+                  <div><strong>Instance:</strong> {selectedAlert.instance || 'N/A'}</div>
                   <div><strong>Severity:</strong> <Tag color={getSeverityColor(selectedAlert.severity)}>{selectedAlert.severity}</Tag></div>
                 </Col>
                 <Col span={12}>

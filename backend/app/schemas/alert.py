@@ -6,6 +6,7 @@ class AlertBase(BaseModel):
     alert_name: str
     cluster: Optional[str] = None
     pod: Optional[str] = None
+    instance: Optional[str] = None
     severity: Optional[str] = None
     summary: Optional[str] = None
     description: Optional[str] = None

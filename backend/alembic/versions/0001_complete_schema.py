@@ -26,6 +26,7 @@ def upgrade() -> None:
         sa.Column('alert_name', sa.String(), nullable=True),
         sa.Column('cluster', sa.String(), nullable=True),
         sa.Column('pod', sa.String(), nullable=True),
+        sa.Column('instance', sa.String(), nullable=True),
         sa.Column('severity', sa.String(), nullable=True),
         sa.Column('summary', sa.Text(), nullable=True),
         sa.Column('description', sa.Text(), nullable=True),
@@ -85,6 +86,7 @@ def upgrade() -> None:
     op.create_index('ix_alerts_alert_id', 'alerts', ['alert_id'], unique=True)
     op.create_index('ix_alerts_alert_name', 'alerts', ['alert_name'])
     op.create_index('ix_alerts_cluster', 'alerts', ['cluster'])
+    op.create_index('ix_alerts_instance', 'alerts', ['instance']) 
     op.create_index('ix_alerts_severity', 'alerts', ['severity'])
     op.create_index('ix_alerts_grafana_status', 'alerts', ['grafana_status'])
     op.create_index('ix_alerts_jira_status', 'alerts', ['jira_status'])
